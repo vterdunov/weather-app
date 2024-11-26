@@ -12,8 +12,24 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Lint
+        run: mvn validate
+
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    needs: lint
     permissions:
       contents: read
       packages: write
@@ -29,7 +45,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
